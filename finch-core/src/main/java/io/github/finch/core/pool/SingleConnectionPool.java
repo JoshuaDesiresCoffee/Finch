@@ -2,11 +2,11 @@ package io.github.finch.core.pool;
 
 import java.sql.Connection;
 
-class SingleConnectionPool implements ConnectionPool {
+public class SingleConnectionPool implements ConnectionPool {
 
     private final Connection conn;
 
-    SingleConnectionPool(Connection conn) {
+    public SingleConnectionPool(Connection conn) {
         this.conn = conn;
     }
 

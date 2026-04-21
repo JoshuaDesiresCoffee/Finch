@@ -57,9 +57,10 @@ public class EntityMapper {
             // For List<T> relations extract T; for FK relations relatedType = fieldType
             Class<?> relatedType = null;
             if (isOneToMany || isManyToMany) {
-                if (f.getGenericType() instanceof ParameterizedType pt) {
+                if (f.getGenericType() instanceof ParameterizedType) {
+                    ParameterizedType pt = (ParameterizedType) f.getGenericType();
                     Type[] args = pt.getActualTypeArguments();
-                    if (args.length == 1 && args[0] instanceof Class<?> c) relatedType = c;
+                    if (args.length == 1 && args[0] instanceof Class) relatedType = (Class<?>) args[0];
                 }
             } else if (isForeignKey) {
                 relatedType = fieldType;
