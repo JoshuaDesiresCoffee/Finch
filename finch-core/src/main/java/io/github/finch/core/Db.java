@@ -66,6 +66,7 @@ public class Db {
     public final Insert INSERT = new Insert();
     public final Delete DELETE = new Delete();
 
+    /** Begins an UPDATE statement for the given entity table. */
     public <T> UpdateSet<T> UPDATE(Class<T> tableClass) {
         return new UpdateQueryImpl<>(pool, tableClass);
     }
@@ -105,6 +106,10 @@ public class Db {
      *   db.EXEC("SELECT * FROM user WHERE id = ?", List.of(1))
      *   db.EXEC("DELETE FROM session WHERE expires_at < ?", List.of(cutoff))
      */
+    /**
+     * Executes arbitrary SQL with positional parameters.
+     * Returns rows as column-name → value maps for SELECT; empty list for DML.
+     */
     public List<Map<String, Object>> EXEC(String sql, List<Object> params) {
         Connection conn = null;
         try {
@@ -138,6 +143,7 @@ public class Db {
 
     // ── Schema ────────────────────────────────────────────────────────────────
 
+    /** Runs {@code CREATE TABLE IF NOT EXISTS} for each class and creates junction tables for {@code @ManyToMany} fields. */
     public Db sync(Class<?>... tables) {
         SchemaSync.sync(pool, tables);
         return this;
@@ -145,12 +151,14 @@ public class Db {
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
+    /** Closes the connection pool and releases all held connections. */
     public void close() {
         pool.close();
     }
 
     // ── Initialization ────────────────────────────────────────────────────────
 
+    /** Returns a builder for configuring and creating a {@link Db} instance. */
     public static DbConfig configure() {
         return new DbConfig();
     }
@@ -169,6 +177,7 @@ public class Db {
 
     // ── Config builder ────────────────────────────────────────────────────────
 
+    /** Fluent builder returned by {@link Db#configure()}. */
     public static final class DbConfig {
 
         private String     url      = "";
@@ -178,13 +187,20 @@ public class Db {
         private DataSource dataSource;
         private Class<?>[] tables   = new Class[0];
 
+        /** Sets the JDBC connection URL. */
         public DbConfig url(String url)           { this.url        = url; return this; }
+        /** Sets the database username. */
         public DbConfig user(String user)         { this.user       = user; return this; }
+        /** Sets the database password. */
         public DbConfig password(String pw)       { this.password   = pw;  return this; }
+        /** Sets the maximum connection pool size (default 10). */
         public DbConfig poolSize(int n)           { this.poolSize   = n;   return this; }
+        /** Supplies an external {@link DataSource} (e.g. HikariCP). Overrides url/user/password/poolSize. */
         public DbConfig dataSource(DataSource ds) { this.dataSource = ds;  return this; }
+        /** Registers entity classes and runs schema sync on {@link #connect()}. */
         public DbConfig tables(Class<?>... cls)   { this.tables     = cls; return this; }
 
+        /** Builds the {@link Db} instance, initialises the pool, and syncs any registered tables. */
         public Db connect() {
             ensureDirectories(url);
             ConnectionPool cp;

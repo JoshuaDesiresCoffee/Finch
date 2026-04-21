@@ -65,10 +65,15 @@ public class DbTransaction implements AutoCloseable {
         }
     }
 
+    /** Begins an UPDATE statement scoped to this transaction. */
     public <T> UpdateSet<T> UPDATE(Class<T> cls) {
         return new UpdateQueryImpl<>(txPool, cls);
     }
 
+    /**
+     * Executes arbitrary SQL with positional parameters within this transaction.
+     * Returns rows as column-name → value maps for SELECT; empty list for DML.
+     */
     public List<Map<String, Object>> EXEC(String sql, List<Object> params) {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (params != null) {
@@ -96,6 +101,7 @@ public class DbTransaction implements AutoCloseable {
 
     // ── Transaction control ───────────────────────────────────────────────────
 
+    /** Commits the transaction. The connection is returned to the pool on {@link #close()}. */
     public void COMMIT() {
         try {
             conn.commit();
@@ -105,6 +111,7 @@ public class DbTransaction implements AutoCloseable {
         }
     }
 
+    /** Explicitly rolls back the transaction. Also called automatically by {@link #close()} if {@link #COMMIT()} was not invoked. */
     public void ROLLBACK() {
         try {
             conn.rollback();
