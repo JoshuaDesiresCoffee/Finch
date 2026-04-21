@@ -35,7 +35,17 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
     @Override public SelectQuery<T> JOIN(Class<?> related) {
         joins.add(related); return this;
     }
+    // Allows: column names, optional table prefix, optional ASC/DESC, comma-separated.
+    // Rejects anything else (quotes, semicolons, subqueries, etc.).
+    private static final java.util.regex.Pattern SAFE_ORDER_BY =
+            java.util.regex.Pattern.compile(
+                    "^[a-zA-Z_][a-zA-Z0-9_.]*(?:\\s+(?:ASC|DESC))?" +
+                    "(?:\\s*,\\s*[a-zA-Z_][a-zA-Z0-9_.]*(?:\\s+(?:ASC|DESC))?)*$",
+                    java.util.regex.Pattern.CASE_INSENSITIVE);
+
     @Override public SelectQuery<T> ORDER_BY(String clause) {
+        if (clause == null || !SAFE_ORDER_BY.matcher(clause.trim()).matches())
+            throw new IllegalArgumentException("ORDER_BY clause contains unsafe characters: " + clause);
         orderBy = clause; return this;
     }
     @Override public SelectQuery<T> LIMIT(int n) {
