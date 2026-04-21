@@ -70,7 +70,7 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
             if (conn != null) pool.release(conn);
         }
 
-        if (!results.isEmpty()) loadRelations(results, conn);
+        if (!results.isEmpty()) loadRelations(results);
         return results;
     }
 
@@ -101,7 +101,7 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
 
     // ── Relation loading ──────────────────────────────────────────────────────
 
-    private void loadRelations(List<T> results, Connection conn) {
+    private void loadRelations(List<T> results) {
         List<FieldInfo> fields = EntityMapper.getFields(tableClass);
 
         // Collect parent IDs once
