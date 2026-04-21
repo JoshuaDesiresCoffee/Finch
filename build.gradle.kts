@@ -25,4 +25,19 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+
+    pluginManager.withPlugin("maven-publish") {
+        configure<PublishingExtension> {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/JoshuaDesiresCoffee/Finch")
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
+                }
+            }
+        }
+    }
 }
