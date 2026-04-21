@@ -81,14 +81,12 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
         T obj = instantiate(tableClass);
         for (FieldInfo fi : EntityMapper.getFields(tableClass)) {
             if (fi.columnName == null) continue; // OneToMany / ManyToMany — handled later
-            fi.field.setAccessible(true);
             if (fi.isForeignKey) {
                 // Create an unhydrated stub containing only the id
                 Object fkId = rs.getObject(fi.columnName);
                 if (fkId != null) {
                     Object stub = instantiate(fi.relatedType);
                     FieldInfo idField = EntityMapper.getIdField(fi.relatedType);
-                    idField.field.setAccessible(true);
                     idField.field.set(stub, coerce(fkId, idField.field.getType()));
                     fi.field.set(obj, stub);
                 }
@@ -108,7 +106,7 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
         // Collect parent IDs once
         FieldInfo idField = EntityMapper.getIdField(tableClass);
         List<Object> parentIds = results.stream()
-                .map(r -> { try { idField.field.setAccessible(true); return idField.field.get(r); }
+                .map(r -> { try { return idField.field.get(r); }
                             catch (Exception e) { throw new RuntimeException(e); } })
                 .collect(Collectors.toList());
 
@@ -136,11 +134,9 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
         Set<Object> fkIds = new HashSet<>();
         for (T r : results) {
             try {
-                fi.field.setAccessible(true);
                 Object stub = fi.field.get(r);
                 if (stub != null) {
                     FieldInfo relId = EntityMapper.getIdField(fi.relatedType);
-                    relId.field.setAccessible(true);
                     fkIds.add(relId.field.get(stub));
                 }
             } catch (Exception e) { throw new RuntimeException(e); }
@@ -162,7 +158,6 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
                     while (rs.next()) {
                         Object rel = hydrateGeneric(rs, fi.relatedType);
                         FieldInfo relId = EntityMapper.getIdField(fi.relatedType);
-                        relId.field.setAccessible(true);
                         byId.put(relId.field.get(rel), rel);
                     }
                 }
@@ -175,11 +170,9 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
 
         for (T r : results) {
             try {
-                fi.field.setAccessible(true);
                 Object stub = fi.field.get(r);
                 if (stub != null) {
                     FieldInfo relId = EntityMapper.getIdField(fi.relatedType);
-                    relId.field.setAccessible(true);
                     Object full = byId.get(relId.field.get(stub));
                     if (full != null) fi.field.set(r, full);
                 }
@@ -218,10 +211,8 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
         FieldInfo idField = EntityMapper.getIdField(tableClass);
         for (T r : results) {
             try {
-                idField.field.setAccessible(true);
                 Object parentId = idField.field.get(r);
                 List<Object> children = byParentId.getOrDefault(parentId, Collections.emptyList());
-                fi.field.setAccessible(true);
                 fi.field.set(r, children);
             } catch (Exception e) { throw new RuntimeException(e); }
         }
@@ -266,10 +257,8 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
         FieldInfo idField = EntityMapper.getIdField(tableClass);
         for (T r : results) {
             try {
-                idField.field.setAccessible(true);
                 Object parentId = idField.field.get(r);
                 List<Object> related = byParentId.getOrDefault(parentId, Collections.emptyList());
-                fi.field.setAccessible(true);
                 fi.field.set(r, related);
             } catch (Exception e) { throw new RuntimeException(e); }
         }
@@ -281,7 +270,6 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
         Object obj = instantiate(cls);
         for (FieldInfo fi : EntityMapper.getFields(cls)) {
             if (fi.columnName == null || fi.isOneToMany || fi.isManyToMany) continue;
-            fi.field.setAccessible(true);
             Object val = rs.getObject(fi.columnName);
             if (val != null) fi.field.set(obj, coerce(val, fi.field.getType()));
         }

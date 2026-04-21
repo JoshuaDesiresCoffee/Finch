@@ -42,12 +42,10 @@ public class UpdateQueryImpl<T> extends BaseQuery<T> implements UpdateSet<T>, Up
         for (FieldInfo fi : EntityMapper.getFields(tableClass)) {
             if (fi.columnName == null) continue;
             try {
-                fi.field.setAccessible(true);
                 Object val = fi.field.get(obj);
                 setCols.add(fi.columnName + " = ?");
                 if (fi.isForeignKey && val != null) {
                     FieldInfo relId = EntityMapper.getIdField(fi.relatedType);
-                    relId.field.setAccessible(true);
                     setValues.add(relId.field.get(val));
                 } else {
                     setValues.add(val);
@@ -65,7 +63,6 @@ public class UpdateQueryImpl<T> extends BaseQuery<T> implements UpdateSet<T>, Up
                         tableClass.getSimpleName() + " has no FK field pointing to " + relatedClass.getSimpleName()));
         try {
             FieldInfo relId = EntityMapper.getIdField(relatedClass);
-            relId.field.setAccessible(true);
             setCols.add(fkField.columnName + " = ?");
             setValues.add(relId.field.get(obj));
         } catch (IllegalAccessException e) { throw new RuntimeException(e); }

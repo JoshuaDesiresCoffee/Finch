@@ -46,13 +46,11 @@ abstract class BaseQuery<T> {
         for (FieldInfo fi : fields) {
             if (fi.columnName == null) continue;
             try {
-                fi.field.setAccessible(true);
                 Object val = fi.field.get(o);
                 if (val == null) continue;
                 template.add(fi.columnName + " = ?");
                 if (fi.isForeignKey) {
                     FieldInfo relId = EntityMapper.getIdField(fi.relatedType);
-                    relId.field.setAccessible(true);
                     params.add(relId.field.get(val));
                 } else {
                     params.add(val);

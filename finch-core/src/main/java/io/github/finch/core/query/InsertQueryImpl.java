@@ -29,12 +29,10 @@ public class InsertQueryImpl<T> extends BaseQuery<T> implements InsertQuery<T> {
             cols.add(fi.columnName);
             placeholders.add("?");
             try {
-                fi.field.setAccessible(true);
                 Object val = fi.field.get(object);
                 if (fi.isForeignKey && val != null) {
                     // Store the related entity's id, not the object itself
                     FieldInfo relId = EntityMapper.getIdField(fi.relatedType);
-                    relId.field.setAccessible(true);
                     values.add(relId.field.get(val));
                 } else {
                     values.add(val);
