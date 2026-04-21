@@ -65,7 +65,8 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("SELECT failed: " + sql, e);
+            throw new RuntimeException("SELECT failed [" + tableClass.getSimpleName() + "]: "
+                    + sql + " params=" + Arrays.toString(whereParams), e);
         } finally {
             if (conn != null) pool.release(conn);
         }
@@ -77,7 +78,7 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
     // ── Hydration ─────────────────────────────────────────────────────────────
 
     private T hydrate(ResultSet rs) throws Exception {
-        T obj = tableClass.getDeclaredConstructor().newInstance();
+        T obj = instantiate(tableClass);
         for (FieldInfo fi : EntityMapper.getFields(tableClass)) {
             if (fi.columnName == null) continue; // OneToMany / ManyToMany — handled later
             fi.field.setAccessible(true);
@@ -85,7 +86,7 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
                 // Create an unhydrated stub containing only the id
                 Object fkId = rs.getObject(fi.columnName);
                 if (fkId != null) {
-                    Object stub = fi.relatedType.getDeclaredConstructor().newInstance();
+                    Object stub = instantiate(fi.relatedType);
                     FieldInfo idField = EntityMapper.getIdField(fi.relatedType);
                     idField.field.setAccessible(true);
                     idField.field.set(stub, coerce(fkId, idField.field.getType()));
@@ -277,7 +278,7 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
     // ── Utilities ─────────────────────────────────────────────────────────────
 
     private static Object hydrateGeneric(ResultSet rs, Class<?> cls) throws Exception {
-        Object obj = cls.getDeclaredConstructor().newInstance();
+        Object obj = instantiate(cls);
         for (FieldInfo fi : EntityMapper.getFields(cls)) {
             if (fi.columnName == null || fi.isOneToMany || fi.isManyToMany) continue;
             fi.field.setAccessible(true);

@@ -7,6 +7,7 @@ import io.github.finch.core.pool.ConnectionPool;
 import java.sql.*;
 import java.time.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -102,7 +103,8 @@ abstract class BaseQuery<T> {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Query failed: " + sql, e);
+            throw new RuntimeException("Query failed [" + (tableClass != null ? tableClass.getSimpleName() : "?") + "]: "
+                    + sql + " valueParams=" + Arrays.toString(valueParams) + " whereParams=" + Arrays.toString(whereParams), e);
         } finally {
             if (conn != null) pool.release(conn);
         }
@@ -110,5 +112,15 @@ abstract class BaseQuery<T> {
 
     protected String tableName() {
         return EntityMapper.tableName(tableClass);
+    }
+
+    protected static <C> C instantiate(Class<C> cls) {
+        try {
+            return cls.getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(cls.getName() + " must have a public no-arg constructor", e);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to instantiate " + cls.getName(), e);
+        }
     }
 }

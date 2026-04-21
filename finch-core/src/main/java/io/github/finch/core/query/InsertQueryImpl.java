@@ -53,7 +53,7 @@ public class InsertQueryImpl<T> extends BaseQuery<T> implements InsertQuery<T> {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException("INSERT failed: " + sql, e);
+            throw new RuntimeException("INSERT failed [" + tableClass.getSimpleName() + "]: " + sql + " values=" + values, e);
         } finally {
             if (conn != null) pool.release(conn);
         }

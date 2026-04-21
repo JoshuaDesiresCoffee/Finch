@@ -7,6 +7,7 @@ import io.github.finch.core.pool.ConnectionPool;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -106,7 +107,8 @@ public class UpdateQueryImpl<T> extends BaseQuery<T> implements UpdateSet<T>, Up
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new RuntimeException("UPDATE failed: " + sql, e);
+            throw new RuntimeException("UPDATE failed [" + tableClass.getSimpleName() + "]: "
+                    + sql + " set=" + setValues + " whereParams=" + Arrays.toString(whereParams), e);
         } finally {
             if (conn != null) pool.release(conn);
         }
