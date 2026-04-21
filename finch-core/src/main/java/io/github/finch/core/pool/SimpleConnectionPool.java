@@ -35,7 +35,10 @@ public class SimpleConnectionPool implements ConnectionPool {
     @Override
     public Connection borrow() throws SQLException {
         Connection conn = idle.poll();
-        if (conn != null && isValid(conn)) return conn;
+        if (conn != null) {
+            if (isValid(conn)) return conn;
+            discard(conn);
+        }
 
         synchronized (this) {
             if (all.size() < maxSize) {
@@ -51,9 +54,18 @@ public class SimpleConnectionPool implements ConnectionPool {
             Thread.currentThread().interrupt();
             throw new SQLException("Interrupted waiting for connection");
         }
-        if (conn == null)     throw new SQLException("Connection pool exhausted (max=" + maxSize + ")");
-        if (!isValid(conn))   conn = newConnection();
+        if (conn == null) throw new SQLException("Connection pool exhausted (max=" + maxSize + ")");
+        if (!isValid(conn)) {
+            discard(conn);
+            conn = newConnection();
+            synchronized (this) { all.add(conn); }
+        }
         return conn;
+    }
+
+    private synchronized void discard(Connection conn) {
+        all.remove(conn);
+        try { conn.close(); } catch (SQLException ignored) {}
     }
 
     @Override
