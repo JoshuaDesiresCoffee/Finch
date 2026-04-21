@@ -1,4 +1,4 @@
-package Autumn.orm;
+package io.github.finch.core;
 
 import io.github.finch.core.mapping.SchemaSync;
 import io.github.finch.core.pool.ConnectionPool;
@@ -12,7 +12,7 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * Entry point for the Autumn ORM.
+ * Entry point for Finch.
  *
  * Initialization:
  *   Db db = Db.configure()

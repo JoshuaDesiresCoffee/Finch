@@ -1,4 +1,4 @@
-package Autumn.orm;
+package io.github.finch.core;
 
 import io.github.finch.core.pool.ConnectionPool;
 import io.github.finch.core.pool.SingleConnectionPool;
