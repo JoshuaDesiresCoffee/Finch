@@ -4,7 +4,7 @@ A lightweight Java ORM that reads like SQL. Finch gives you type-safe query buil
 
 ```java
 db.SELECT.FROM(Post.class).JOIN(User.class).WHERE("published = ?", true).ORDER_BY("created_at DESC").LIMIT(10).EXEC()
-db.UPDATE(Post.class).SET(post).SET(tech).WHERE("id = ?", post.id).EXEC()
+db.UPDATE(Post.class).SET(post).WHERE("id = ?", post.id).EXEC()
 db.EXEC("SELECT COUNT(*) AS n FROM post WHERE published = ?", List.of(true))
 ```
 
@@ -92,8 +92,8 @@ db.UPDATE(User.class).SET(alice).WHERE("id = ?", alice.id).EXEC()
 // FK only — updates just the foreign key column
 db.UPDATE(Post.class).SET(tech).WHERE("id = ?", post.id).EXEC()
 
-// Chained — object fields + FK in one statement
-db.UPDATE(Post.class).SET(post).SET(bob).WHERE("id = ?", post.id).EXEC()
+// FK only — updates just the foreign key column
+db.UPDATE(Post.class).SET(bob).WHERE("id = ?", post.id).EXEC()
 ```
 
 ### DELETE

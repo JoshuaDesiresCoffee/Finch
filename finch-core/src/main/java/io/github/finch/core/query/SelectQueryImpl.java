@@ -51,7 +51,7 @@ public class SelectQueryImpl<T> extends BaseQuery<T> implements SelectQuery<T> {
         StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName());
         if (where != null)              sql.append(" WHERE ").append(where);
         if (orderBy != null)            sql.append(" ORDER BY ").append(orderBy);
-        if (limit > 0 || offset >= 0)   sql.append(" LIMIT ").append(limit > 0 ? limit : -1);
+        if (limit > 0)                   sql.append(" LIMIT ").append(limit);
         if (offset >= 0)                sql.append(" OFFSET ").append(offset);
 
         List<T> results = new ArrayList<>();
