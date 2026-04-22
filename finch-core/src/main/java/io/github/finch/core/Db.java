@@ -143,10 +143,26 @@ public class Db {
 
     // ── Schema ────────────────────────────────────────────────────────────────
 
-    /** Runs {@code CREATE TABLE IF NOT EXISTS} for each class and creates junction tables for {@code @ManyToMany} fields. */
+    /**
+     * Creates missing tables and migrates existing ones (adds new columns).
+     * Columns removed from entities are left untouched to prevent data loss.
+     * Junction tables for {@code @ManyToMany} relationships are created automatically.
+     */
     public Db sync(Class<?>... tables) {
         SchemaSync.sync(pool, tables);
         return this;
+    }
+
+    /**
+     * Returns the full CREATE TABLE DDL for the given entity classes as a SQL string.
+     * Types are selected for the active database dialect (e.g. {@code SERIAL} on
+     * PostgreSQL, {@code INTEGER PRIMARY KEY} on SQLite). Junction tables for
+     * {@code @ManyToMany} relationships are included and deduplicated.
+     *
+     *   String ddl = db.exportSchema(User.class, Post.class, Tag.class);
+     */
+    public String exportSchema(Class<?>... tables) {
+        return SchemaSync.exportSchema(pool, tables);
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
